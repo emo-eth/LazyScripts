@@ -17,7 +17,6 @@ class jwcsv(object):
 
 
 def write_csv(outfile, rows):
-    '''Basis for writing out csv in a subclass'''
     if '.csv' in outfile:
             outfile = outfile.split('.csv')[0]
     with open('%s.csv' % outfile, 'w', encoding='utf-8') as outfile:
