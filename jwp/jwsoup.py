@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 
 
 cookies = None
+user_agent = 'SoupStock'
 
 
 class jwsoup(object):
@@ -43,9 +44,6 @@ class jwsoup(object):
         print("Logging in...")
         browser.submit(login_form, login_page.url)
         return browser.session.cookies
-
-
-user_agent = 'SoupStock'
 
 
 def get_soup(url, cookies=None, fail=False):
