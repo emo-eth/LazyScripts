@@ -1,20 +1,31 @@
-def jwprint(*args):
-    ''' bypasses UnicodeEncodeErrors with a try/except block '''
+def jwprint(*args, **kwargs):
+    ''' bypasses UnicodeEncodeErrors with a try/except block
+        TODO: recursive escaping'''
     try:
-        print(*args)
+        print(*args, **kwargs)
     except UnicodeEncodeError:
         tuple_temp_list = []
+        temp_kw = {}
         for item in args:
-            if type(item) is dict:
-                item = {k.encode('utf-8'): v.encode('utf8') for k, v in item.items()}
-            elif type(item) is list:
-                print('list')
-                item = [x.encode('utf-8') for x in item]
-            elif type(item) is tuple:
-                item = tuple(x.encode('utf-8') for x in item)
-            elif type(item) is str:
-                item = item.encode('utf-8')
-            else:
-                print('unhandled type:', type(item))
+            item = escape(item)
             tuple_temp_list.append(item)
-        print(*tuple(tuple_temp_list))
+        for k, v in kwargs.items():
+            v = escape(v)
+            temp_kw[k] = v
+
+        print(*tuple(tuple_temp_list), **kwargs)
+
+
+def escape(item):
+    if type(item) is dict:
+        item = {escape(k): escape(v) for k, v in item.items()}
+    elif type(item) is tuple:
+        item = tuple(escape(x) for x in item)
+    elif type(item) is list:
+        item = [escape(x) for x in item]
+    elif type(item) is str:
+            item = unicode(item, 'utf-8')
+    return item
+
+
+jwprint('beyoncé', end='e')
