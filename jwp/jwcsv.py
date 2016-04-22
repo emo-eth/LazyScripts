@@ -3,7 +3,7 @@ import csv
 
 class jwcsv(object):
 
-    def write_csv(self, outfile, rows, dict_headers=[]):
+    def write_csv(self, outfile, rows, dict_headers=[], headers=[]):
         '''Basis for writing out csv in a subclass'''
         if '.csv' in outfile:
             outfile = outfile.split('.csv')[0]
@@ -13,7 +13,7 @@ class jwcsv(object):
                 writer.writerows(rows)
         else:
             with open('%s.csv' % outfile, 'w', encoding='utf-8') as outfile:
-                writer = csv.writer(outfile)
+                writer = csv.writer(outfile, headers)
                 writer.writerows(rows)
 
     def read_csv(self, infile):
@@ -21,7 +21,7 @@ class jwcsv(object):
         return list(list(row for row in reader))
 
 
-def write_csv(outfile, rows, dict_headers=[]):
+def write_csv(outfile, rows, dict_headers=[], headers=[]):
     if '.csv' in outfile:
         outfile = outfile.split('.csv')[0]
     if dict_headers:
@@ -30,7 +30,7 @@ def write_csv(outfile, rows, dict_headers=[]):
             writer.writerows(rows)
     else:
         with open('%s.csv' % outfile, 'w', encoding='utf-8') as outfile:
-            writer = csv.writer(outfile)
+            writer = csv.writer(outfile, headers)
             writer.writerows(rows)
 
 
