@@ -13,7 +13,8 @@ class jwcsv(object):
                 writer.writerows(rows)
         else:
             with open('%s.csv' % outfile, 'w', encoding='utf-8') as outfile:
-                writer = csv.writer(outfile, headers)
+                writer = csv.writer(outfile)
+                writer.writerows(headers) if headers else None
                 writer.writerows(rows)
 
     def read_csv(self, infile):
@@ -30,7 +31,8 @@ def write_csv(outfile, rows, dict_headers=[], headers=[]):
             writer.writerows(rows)
     else:
         with open('%s.csv' % outfile, 'w', encoding='utf-8') as outfile:
-            writer = csv.writer(outfile, headers)
+            writer = csv.writer(outfile)
+            writer.writerow(headers) if headers else None
             writer.writerows(rows)
 
 
