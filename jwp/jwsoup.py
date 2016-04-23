@@ -1,5 +1,5 @@
 import requests
-import mechanicalsoup
+# import mechanicalsoup
 from bs4 import BeautifulSoup
 
 
@@ -34,6 +34,9 @@ class jwsoup(object):
             print('Unable to download url ' + url)
             return None
 
+'''
+Experimental login method using mechanicalsoup for a project I was working on.
+
     def _login(self):
         browser = mechanicalsoup.Browser()
         login_page = browser.get(
@@ -44,6 +47,7 @@ class jwsoup(object):
         print("Logging in...")
         browser.submit(login_form, login_page.url)
         return browser.session.cookies
+'''
 
 
 def get_soup(url, cookies=None, fail=False):
