@@ -1,5 +1,6 @@
 from multiprocessing.pool import Pool, ThreadPool
-from multiprocessing import Manager, cpu_count
+from multiprocessing import Manager, Lock, cpu_count
+import multiprocessing
 
 
 class jwmultithreaded(object):
@@ -24,7 +25,7 @@ class jwmultithreaded(object):
 
     def safe_multithread(self, fn, args=[[]], processes=8):
         '''Guaranteed threadsafe version of multithread using ThreadPool.
-        Limited by interpreter lock.'''
+        Allows child threads. Limited by interpreter lock.'''
 
         return self.multithread(fn, args=args, pool_type=ThreadPool, processes=processes)
 
@@ -47,7 +48,7 @@ class jwmultithreaded(object):
 
     def safe_multithread_failsafe(self, fn, args=[[]], processes=8):
         '''Threadsafe version of multithread_failsafe.
-        Limited by interpretor lock.'''
+        Allows child threads. Limited by interpretor lock.'''
 
         return self.multithread_failsafe(fn, args=args, pool_type=ThreadPool,
                                          processes=processes)
@@ -56,7 +57,7 @@ class jwmultithreaded(object):
 def multithread(fn, args=[[]], pool_type=Pool,
                 processes=8):
     '''Multithread method using a Pool. Not inherently threadsafe.
-    For threadsafe operations, use Managers.
+    For threadsafe operations, use Managers or Locks.
     Args must be wrapped in their own list, as starmap is used for
     multiple arguments.
     Returns a list of the results'''
@@ -67,7 +68,8 @@ def multithread(fn, args=[[]], pool_type=Pool,
 
 
 def safe_multithread(fn, args=[[]], processes=8):
-    '''Guaranteed threadsafe version of multithread using ThreadPool'''
+    '''Guaranteed threadsafe version of multithread using ThreadPool.
+    Allows child threads. Limited by interpreter lock.'''
     return multithread(fn, args=args, pool_type=ThreadPool, processes=processes)
 
 
@@ -89,6 +91,28 @@ def multithread_failsafe(fn, args=[[]], pool_type=Pool,
 
 
 def safe_multithread_failsafe(fn, args=[[]], processes=4):
-    '''Threadsafe version of multithread_failsafe'''
+    '''Threadsafe version of multithread_failsafe.
+    Allows child threads. Limited by interpreter lock.'''
     return multithread_failsafe(fn, args=args, pool_type=ThreadPool,
                                 processes=processes)
+
+
+# http://stackoverflow.com/questions/6974695/python-process-pool-non-daemonic
+# Experimental for processes that spawn children. In my experience,
+# often results in broken pipes.
+
+class NoDaemonProcess(multiprocessing.Process):
+    # make 'daemon' attribute always return False
+    def _get_daemon(self):
+        return False
+
+    def _set_daemon(self, value):
+        pass
+    daemon = property(_get_daemon, _set_daemon)
+
+# We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
+# because the latter is only a wrapper function, not a proper class.
+
+
+class MyPool(multiprocessing.pool.Pool):
+    Process = NoDaemonProcess

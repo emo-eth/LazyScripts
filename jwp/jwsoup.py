@@ -20,7 +20,7 @@ class jwsoup(object):
         else:
             print('Unable to download url ' + url)
             if fail:
-                raise ValueError
+                raise ValueError('Status ' + str(req.status_code))
             return BeautifulSoup('', 'lxml')
 
     @staticmethod
@@ -59,7 +59,7 @@ def get_soup(url, cookies=None, fail=False):
     else:
         print('Unable to download url ' + url)
         if fail:
-            raise ValueError
+            raise ValueError('Status ' + str(req.status_code))
         return BeautifulSoup('', 'lxml')
 
 
