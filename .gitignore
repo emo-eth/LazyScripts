@@ -1,3 +1,4 @@
-jwp/___pycache___*
+jwp/___pycache___/*
 .DS_Store
 jwp/.DS_STORE
+*.pyc
