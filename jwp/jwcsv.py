@@ -5,15 +5,13 @@ class jwcsv(object):
 
     def write_csv(self, outfile, rows, dict_headers=[], headers=[], delimiter=',', encoding='utf-8'):
         '''Basis for writing out csv in a subclass'''
-        if '.csv' in outfile:
-            outfile = outfile.split('.csv')[0]
         if dict_headers:
-            with open('%s.csv' % outfile, 'w', encoding=encoding) as outfile:
+            with open(outfile, 'w', encoding=encoding) as outfile:
                 writer = csv.DictWriter(outfile, dict_headers)
                 writer.writeheader()
                 writer.writerows(rows)
         else:
-            with open('%s.csv' % outfile, 'w', encoding=encoding) as outfile:
+            with open(outfile, 'w', encoding=encoding) as outfile:
                 writer = csv.writer(outfile)
                 writer.writerows(headers) if headers else None
                 writer.writerows(rows)
@@ -24,15 +22,13 @@ class jwcsv(object):
 
 
 def write_csv(outfile, rows, dict_headers=[], headers=[], delimiter=',', encoding='utf-8'):
-    if '.csv' in outfile:
-        outfile = outfile.split('.csv')[0]
     if dict_headers:
-        with open('%s.csv' % outfile, 'w', encoding=encoding) as outfile:
+        with open(outfile, 'w', encoding=encoding) as outfile:
             writer = csv.DictWriter(outfile, fieldnames=dict_headers, delimiter=delimiter)
             writer.writeheader()
             writer.writerows(rows)
     else:
-        with open('%s.csv' % outfile, 'w', encoding=encoding) as outfile:
+        with open(outfile, 'w', encoding=encoding) as outfile:
             writer = csv.writer(outfile, delimiter=delimiter)
             writer.writerow(headers) if headers else None
             writer.writerows(rows)
