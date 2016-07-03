@@ -48,7 +48,7 @@ class jwmultithreaded(object):
 
     def safe_multithread_failsafe(self, fn, args=[[]], processes=8):
         '''Threadsafe version of multithread_failsafe.
-        Allows child threads. Limited by interpretor lock.'''
+        Allows child threads. Limited by interpreter lock.'''
 
         return self.multithread_failsafe(fn, args=args, pool_type=ThreadPool,
                                          processes=processes)

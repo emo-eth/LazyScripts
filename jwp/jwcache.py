@@ -58,5 +58,5 @@ def load_cache(name, destroy_on_fail=False):
 
 
 def write_cache(name, cache):
-    with open(name, 'w', encoding='utf-8') as outfile:
+    with open(name, 'w') as outfile:
         json.dump(cache, outfile)
