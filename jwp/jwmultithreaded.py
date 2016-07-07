@@ -124,9 +124,3 @@ class NoDaemonProcess(multiprocessing.Process):
 
 class MyPool(multiprocessing.pool.Pool):
     Process = NoDaemonProcess
-
-
-def test():
-    raise ValueError
-
-multithread_failsafe(test, [[] for x in range(10)])
