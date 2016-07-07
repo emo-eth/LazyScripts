@@ -3,11 +3,13 @@ import csv
 
 class jwcsv(object):
 
-    def write_csv(self, outfile, rows, dict_headers=[], headers=[], delimiter=',', encoding='utf-8'):
+    def write_csv(self, outfile, rows, delimiter=',', headers=[], encoding='utf-8'):
         '''Basis for writing out csv in a subclass'''
-        if dict_headers:
+        if type(rows) is dict:
+            if not headers:
+                headers = list(rows.keys())
             with open(outfile, 'w', encoding=encoding) as outfile:
-                writer = csv.DictWriter(outfile, dict_headers)
+                writer = csv.DictWriter(outfile, headers)
                 writer.writeheader()
                 writer.writerows(rows)
         else:
@@ -16,15 +18,17 @@ class jwcsv(object):
                 writer.writerows(headers) if headers else None
                 writer.writerows(rows)
 
-    def read_csv(self, infile, encoding='utf-8', delimiter=','):
+    def read_csv(self, infile, delimiter=',', encoding='utf-8'):
         reader = csv.reader(open(infile, encoding=encoding), delimiter=delimiter)
         return list(list(row for row in reader))
 
 
-def write_csv(outfile, rows, dict_headers=[], headers=[], delimiter=',', encoding='utf-8'):
-    if dict_headers:
+def write_csv(outfile, rows, delimiter=',', headers=[], encoding='utf-8'):
+    if type(rows) is dict:
+        if not headers:
+            headers = list(rows.keys())
         with open(outfile, 'w', encoding=encoding) as outfile:
-            writer = csv.DictWriter(outfile, fieldnames=dict_headers, delimiter=delimiter)
+            writer = csv.DictWriter(outfile, fieldnames=headers, delimiter=delimiter)
             writer.writeheader()
             writer.writerows(rows)
     else:
@@ -34,6 +38,6 @@ def write_csv(outfile, rows, dict_headers=[], headers=[], delimiter=',', encodin
             writer.writerows(rows)
 
 
-def read_csv(infile, encoding='utf-8', delimiter=','):
+def read_csv(infile, delimiter=',', encoding='utf-8'):
     reader = csv.reader(open(infile, encoding=encoding), delimiter=delimiter)
     return list(list(row for row in reader))
