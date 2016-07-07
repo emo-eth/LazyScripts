@@ -1,6 +1,7 @@
+import multiprocessing
 from multiprocessing.pool import Pool, ThreadPool
 from multiprocessing import Manager, Lock, cpu_count
-import multiprocessing
+import traceback
 
 
 class jwmultithreaded(object):
@@ -43,8 +44,11 @@ class jwmultithreaded(object):
             for r in threads:
                 try:
                     results.append(r.get())
-                except Exception as e:
-                    print(type(e), e)
+                except:
+                    print('######BEGIN TRACEBACK######')
+                    traceback.print_exc()
+                    print('######END TRACEBACK######')
+                    print()
         return results
 
     def safe_multithread_failsafe(self, fn, args=[[]], processes=8):
@@ -77,7 +81,7 @@ def safe_multithread(fn, args=[[]], processes=8):
 def multithread_failsafe(fn, args=[[]], pool_type=Pool,
                          processes=4):
     '''Aynchronous multithreading that does not break on individual errors.
-    Instead, prints error and message, and the input is disregarded'''
+    Instead, prints traceback, and the input is disregarded'''
     with pool_type(processes) as pool:
         threads = []
         for elem in args:
@@ -86,8 +90,11 @@ def multithread_failsafe(fn, args=[[]], pool_type=Pool,
         for r in threads:
             try:
                 results.append(r.get())
-            except Exception as e:
-                print(type(e), e)
+            except:
+                print('######BEGIN TRACEBACK######')
+                traceback.print_exc()
+                print('######END TRACEBACK######')
+                print()
     return results
 
 
@@ -117,3 +124,9 @@ class NoDaemonProcess(multiprocessing.Process):
 
 class MyPool(multiprocessing.pool.Pool):
     Process = NoDaemonProcess
+
+
+def test():
+    raise ValueError
+
+multithread_failsafe(test, [[] for x in range(10)])
