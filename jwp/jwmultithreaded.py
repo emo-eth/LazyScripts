@@ -1,7 +1,9 @@
 import multiprocessing
 from multiprocessing.pool import Pool, ThreadPool
-from multiprocessing import Manager, Lock, cpu_count
+from multiprocessing import cpu_count
 import traceback
+# for reference:
+# from multiprocessing import Manager, Lock
 
 
 class jwmultithreaded(object):
