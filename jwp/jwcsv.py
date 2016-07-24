@@ -10,18 +10,34 @@ class jwcsv(object):
 
     def write_csv(self, outfile, rows, delimiter=',', headers=[], encoding='utf-8'):
         '''Basis for writing out csv in a subclass'''
-        if type(rows) is dict:
+        assert type(rows) is list or type(
+            rows) is tuple, "Rows arg must be a list/tuple of either lists, tuples or dicts"
+        assert len(rows), "Nothing to writeout"
+
+        def write_dicts(outfile, rows, delimiter, headers, encoding):
             if not headers:
-                headers = list(rows.keys())
+                headers = list(rows[0].keys())
             with open(outfile, 'w', encoding=encoding) as outfile:
-                writer = csv.DictWriter(outfile, headers)
+                writer = csv.DictWriter(
+                    outfile, fieldnames=headers, delimiter=delimiter)
                 writer.writeheader()
                 writer.writerows(rows)
-        else:
+
+        def write_lists_tups_or_none(outfile, rows, delimiter, headers, encoding):
             with open(outfile, 'w', encoding=encoding) as outfile:
-                writer = csv.writer(outfile)
-                writer.writerows(headers) if headers else None
+                writer = csv.writer(outfile, delimiter=delimiter)
+                writer.writerow(headers) if headers else None
                 writer.writerows(rows)
+
+        if rows:
+            if type(rows[0]) is dict:
+                write_dicts(outfile, rows, delimiter, headers, encoding)
+            else:
+                write_lists_tups_or_none(
+                    outfile, rows, delimiter, headers, encoding)
+        else:
+            write_lists_tups_or_none(
+                outfile, rows, delimiter, headers, encoding)
 
     def read_csv(self, infile, delimiter=',', encoding='utf-8', named=False):
         "Returns a list of lists (unnamed) or a list of named tuples (named)"
@@ -50,19 +66,33 @@ def write_csv(outfile, rows, delimiter=',', headers=[], encoding='utf-8'):
         string      delimiter: the delimiter to use
         collection  headers:   a collection of identifiers to use as headers
         encoding    encoding:  the encoding to use on the file"""
-    if type(rows) is dict:
+    assert type(rows) is list or type(
+        rows) is tuple, "Rows arg must be a list/tuple of either lists, tuples or dicts"
+    assert len(rows), "Nothing to writeout"
+
+    def write_dicts(outfile, rows, delimiter, headers, encoding):
         if not headers:
-            headers = list(rows.keys())
+            headers = list(rows[0].keys())
         with open(outfile, 'w', encoding=encoding) as outfile:
             writer = csv.DictWriter(
                 outfile, fieldnames=headers, delimiter=delimiter)
             writer.writeheader()
             writer.writerows(rows)
-    else:
+
+    def write_lists_tups_or_none(outfile, rows, delimiter, headers, encoding):
         with open(outfile, 'w', encoding=encoding) as outfile:
             writer = csv.writer(outfile, delimiter=delimiter)
             writer.writerow(headers) if headers else None
             writer.writerows(rows)
+
+    if rows:
+        if type(rows[0]) is dict:
+            write_dicts(outfile, rows, delimiter, headers, encoding)
+        else:
+            write_lists_tups_or_none(
+                outfile, rows, delimiter, headers, encoding)
+    else:
+        write_lists_tups_or_none(outfile, rows, delimiter, headers, encoding)
 
 
 def read_csv(infile, delimiter=',', encoding='utf-8', named=False):
