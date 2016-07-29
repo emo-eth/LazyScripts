@@ -120,8 +120,7 @@ def safe_multithread(fn, args=[[]], processes=cpus, chunksize=1):
 
 
 def multithread_failsafe(fn, args=[[]], pool_type=Pool,
-                         processes=cpus, maxtasksperchild=1,
-                         chunksize=1):
+                         processes=cpus, chunksize=1):
     '''Aynchronous multithreading that does not break on individual errors.
     Instead, prints error and message, and the input is disregarded'''
 
@@ -130,7 +129,8 @@ def multithread_failsafe(fn, args=[[]], pool_type=Pool,
         # for elem in args:
         #     threads.append(pool.apply_async(fn, elem))
         results = []
-        for r in pool.starmap_async(fn, args, chunksize=chunksize):
+        result_objs = [pool.apply_async(fn, arg) for arg in args]
+        for r in result_objs:
             try:
                 results.append(r.get())
             except:
