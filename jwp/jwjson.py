@@ -1,7 +1,7 @@
 import json
 
 
-class jwcache(object):
+class jwjson(object):
 
     cache_updated = False
     cache = {}
@@ -73,9 +73,6 @@ def write_json(path, out, encoding='utf-16'):
 
 
 # deprecated api, for backwards-compatibility
-def load_cache(path, encoding='utf-16', destroy_on_fail=False):
-    load_json(path, encoding, destroy_on_fail)
-
-
-def write_cache(path, out, encoding='utf-16'):
-    write_json(path, out, encoding)
+load_cache = load_json
+write_cache = load_json
+jwcache = jwjson
