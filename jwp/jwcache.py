@@ -20,8 +20,8 @@ class jwcache(object):
                 json.dump(cache_temp, outfile)
             return cache_temp
         except Exception as e:
-            print(type(e), e)
             if destroy_on_fail:
+                print(type(e), e)
                 print("Loading cache failed. Overwriting corrupt cache.")
                 with open(path, 'w', encoding='utf-16') as outfile:
                     json.dump(cache_temp, outfile)
