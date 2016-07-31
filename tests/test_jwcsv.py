@@ -59,8 +59,8 @@ class csvTest(unittest.TestCase):
         self.assertEqual(read, rowcopy)
 
     def test_write_dict(self):
-        rows = [{'fruit':'blanabba', 'count': '5'},
-                {'fruit':'peesh', 'count': '3'}]
+        rows = [{'fruit': 'blanabba', 'count': '5'},
+                {'fruit': 'peesh', 'count': '3'}]
         write_csv(self.testpath, rows)
         example = read_csv(self.testpath, named=True)
         self.assertTrue(len(example) == 2)
