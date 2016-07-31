@@ -12,23 +12,81 @@ socks.set_default_proxy(socks.SOCKS5, SOCKS5_PROXY_HOST, SOCKS5_PROXY_PORT)
 DEFAULT_SOCKET = socket.socket
 TOR_SOCKET = socks.socksocket
 
-s = requests.Session()  # use a session for persistence
+JWSOUP_SESSION = requests.Session()  # use a session for persistence
 
 cookies = None
-user_agent = 'test'
+user_agent = 'jwsoup'
+JWSOUP_SESSION.headers.update({'User-Agent': user_agent})
 
+
+def get_soup(url, headers=None, cookies=None, timeout=None, fail=True, tor=False):
+    _tor_check(tor)
+    req = JWSOUP_SESSION.get(
+        url, headers=headers, cookies=cookies, timeout=timeout)
+    try:
+        _check_response(req.status_code)
+        return BeautifulSoup(req.text, 'lxml')
+    except AssertionError:
+        print('Unable to download url ' + url)
+        if fail:
+            raise ValueError('Status', req.status_code)
+        return BeautifulSoup('', 'lxml')
+
+
+def get_cookies(url, tor=False):
+    "Gets cookie for passing with request."
+    _tor_check(tor)
+    req = JWSOUP_SESSION.get(
+        url, headers={'User-Agent': user_agent})
+    try:
+        _check_response(req.status_code)
+        return req.cookies
+    except AssertionError:
+        print('Unable to download url ' + url)
+        return None
+
+
+def _use_tor():
+    "use tor proxy port"
+    # Set up a proxy
+    socket.socket = TOR_SOCKET
+
+
+def _reset_tor():
+    "return to default socket"
+    socket.socket = DEFAULT_SOCKET
+
+
+def get_new_IP():
+    "TODO: Write this per that article"
+    pass
+
+
+def _tor_check(tor):
+    if tor and socket.socket is not TOR_SOCKET:
+        _use_tor()
+    elif socket.socket is not DEFAULT_SOCKET:
+        _reset_tor()
+
+
+def _check_response(status_code):
+    first_digit = status_code // 100
+    assert first_digit in {2, 3}
+
+
+# deprecated super-class
 
 class jwsoup(object):
     cookies = None
     user_agent = 'SoupStock'
-    s = requests.Session()
+    JWSOUP_SESSION = requests.Session()
 
     def get_soup(self, url, fail=False, tor=False):
         if tor and socket.socket is not TOR_SOCKET:
-            use_tor()
+            _use_tor()
         elif socket.socket is not DEFAULT_SOCKET:
-            reset_tor()
-        req = self.s.get(
+            _reset_tor()
+        req = self.JWSOUP_SESSION.get(
             url, headers={'User-Agent': self.user_agent},
             cookies=self.cookies)
         if req.status_code == 200 or req.status_code == 410:
@@ -41,11 +99,11 @@ class jwsoup(object):
 
     def get_cookies(self, url, tor=False):
         if tor and socket.socket is not TOR_SOCKET:
-            use_tor()
+            _use_tor()
         elif socket.socket is not DEFAULT_SOCKET:
-            reset_tor()
+            _reset_tor()
         "gets cookie for passing with request otherwise site might block acces"
-        req = self.s.get(
+        req = self.JWSOUP_SESSION.get(
             url, headers={'User-Agent': 'jwsoup'})
         if req.status_code == 200:
             return req.cookies
@@ -67,50 +125,3 @@ Experimental login method using mechanicalsoup for a project I was working on.
         browser.submit(login_form, login_page.url)
         return browser.session.cookies
 '''
-
-
-def get_soup(url, cookies=None, fail=False, tor=False):
-    if tor and socket.socket is not TOR_SOCKET:
-        use_tor()
-    elif socket.socket is not DEFAULT_SOCKET:
-        reset_tor()
-    req = s.get(
-        url, headers={'User-Agent': user_agent},
-        cookies=cookies)
-    if req.status_code == 200 or req.status_code == 410:
-        return BeautifulSoup(req.text, 'lxml')
-    else:
-        print('Unable to download url ' + url)
-        if fail:
-            raise ValueError('Status ' + str(req.status_code))
-        return BeautifulSoup('', 'lxml')
-
-
-def get_cookies(url, tor=False):
-    "gets cookie for passing with request otherwise site might block access"
-    if tor and socket.socket is not TOR_SOCKET:
-        use_tor()
-    elif socket.socket is not DEFAULT_SOCKET:
-        reset_tor()
-    req = s.get(
-        url, headers={'User-Agent': 'jwsoup'})
-    if req.status_code == 200:
-        return req.cookies
-    else:
-        print('Unable to download url ' + url)
-        return None
-
-
-def use_tor():
-    "use tor proxy port"
-    # Set up a proxy
-    socket.socket = TOR_SOCKET
-
-
-def reset_tor():
-    "return to default socket"
-    socket.socket = DEFAULT_SOCKET
-
-
-def get_new_IP():
-    pass

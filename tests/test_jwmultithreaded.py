@@ -18,18 +18,18 @@ class multithreadedTest(unittest.TestCase):
         self.assertTrue(results)
 
     def test_multithread_failsafe(self):
-        results = multithread_failsafe(multithread_test, [[1, 2, 3], [4, 5, 0]])
+        results = multithread_failsafe(multithread_test, [[1, 2, 3], [4, 5, 0]], verbose=False)
         self.assertTrue(results)
         self.assertTrue(len(results) == 1)
-        results = multithread_failsafe(multithread_test, [[1, 2, 3], [4, 5, 0]], chunksize=2)
+        results = multithread_failsafe(multithread_test, [[1, 2, 3], [4, 5, 0]], chunksize=2, verbose=False)
         self.assertTrue(results)
         self.assertTrue(len(results) == 1)
 
     def test_safe_multithread_failsafe(self):
-        results = safe_multithread_failsafe(multithread_test, [[1, 2, 3], [4, 5, 0]])
+        results = safe_multithread_failsafe(multithread_test, [[1, 2, 3], [4, 5, 0]],verbose=False)
         self.assertTrue(results)
         self.assertTrue(len(results) == 1)
-        results = safe_multithread_failsafe(multithread_test, [[1, 2, 3], [4, 5, 0]], chunksize=2)
+        results = safe_multithread_failsafe(multithread_test, [[1, 2, 3], [4, 5, 0]], chunksize=2, verbose=False)
         self.assertTrue(results)
         self.assertTrue(len(results) == 1)
 
