@@ -24,9 +24,6 @@ class jsonTest(unittest.TestCase):
 
     def test_write_json(self):
         write_json(self.testpath, self.js)
-
-    def test_write_json(self):
-        write_json(self.testpath, self.js)
         self.assertTrue(os.path.isfile(self.testpath))
         read = load_json(self.testpath)
         self.assertEqual(read, self.js)
