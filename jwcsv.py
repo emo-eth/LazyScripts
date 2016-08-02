@@ -8,6 +8,7 @@ except ImportError:  # Python 3
 
 def write_csv(outfile, rows, delimiter=',', headers=[], encoding='utf-8'):
     """Creates a csv file with a given name from the given rows
+    TODO: Add support for writing out namedtuples with headers
     Args:
         string     outfile:    the file to writeout
         collection rows:       a collection of rows, each a collection
