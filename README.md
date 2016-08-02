@@ -1,11 +1,10 @@
 # Summary
 
-Convenient functions and superclasses for:
-- jwcsv: reading and writing CSVs (`UTF-8` encoded)
-- jwcache: reading and writing JSON
-- jwsoup: downloading webpages as BeautifulSoup objects
-- jwmultithreaded: multithreading with threadlocking (i.e. multiple threads can manipulate the same objects, via multiprocessing.pool.ThreadPool)
-- jwprint: printing non-unicode characters without errors, though its functionality isn't complete for recursive datastructures (e.g. lists of lists). This also isn't necessary if your PITHONIOENCODING environment variable is set to `UTF-8` or similar.
+Convenient functions:
+- jwcsv: reading and writing CSVs in a single line. Supports reading namedtuples and writing lists-of-like-dicts
+- jwjson: reading and writing JSON in a single line
+- jwsoup: downloading webpages as BeautifulSoup objects without drama
+- jwmultithreaded: multithreading and multiprocessing single functions in a single line, with error handling and traceback printing
 
 # Requirements
 
