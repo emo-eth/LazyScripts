@@ -3,7 +3,7 @@
 Convenient functions:
 - jwcsv: reading and writing CSVs in a single line. Supports reading namedtuples and writing lists-of-like-dicts
 - jwjson: reading and writing JSON in a single line
-- jwsoup: downloading webpages as BeautifulSoup objects without drama
+- jwsoup: downloading webpages as BeautifulSoup objects without drama using a `requests` session. Supports routing network through a tor port for anonymous-ish scraping.
 - jwmultithreaded: multithreading and multiprocessing single functions in a single line, with error handling and traceback printing
 
 # Requirements
