@@ -2,3 +2,4 @@ jwp/___pycache___/*
 .DS_Store
 jwp/.DS_STORE
 *.pyc
+password.py
