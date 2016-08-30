@@ -1,20 +1,8 @@
 import unittest
 import requests
-from jwp.jwtor import TorConnection, check_ip
+from jwp.LazyTor import TorConnection, check_ip
 
-# with tor_connection(True):
-#     print('no proxies')
-#     print(check_ip())
-#     SESSION.proxies = PROXIES
-#     print('with proxies')
-#     print(check_ip())
-#     print('renewing connection')
-#     renew_connection()
-#     print('connection renewed')
-#     print(check_ip())
-
-# TODO: Fix weird SIGALRM warnings..? I have a hunch that it's actually
-# unittest's BufferedWriter
+# Weird SIGALRM warnings seemed to be a quirk of unittest
 
 CHECK_URL = 'http://icanhazip.com'
 
@@ -23,7 +11,7 @@ class torTest(unittest.TestCase):
 
     def test_tor_connection(self):
         '''Test that using a TorConnection results in a new ip'''
-        start_ip = requests.get(CHECK_URL).text
+        start_ip = check_ip(requests)
         with TorConnection():
             session = TorConnection.Session()
             tor_ip = check_ip(session)

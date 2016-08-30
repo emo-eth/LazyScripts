@@ -69,10 +69,11 @@ class TorConnection(object):
         'https': 'socks5://127.0.0.1:9050'
     }
     CONTROL_PORT = 9051
+    PASSWORD_ = PASSWORD
 
     def __init__(self, control_port=CONTROL_PORT, password=PASSWORD):
         self.CONTROL_PORT = control_port
-        self.PASSWORD = password
+        self.PASSWORD_ = password
         self.connection = self.connect()
 
     @staticmethod

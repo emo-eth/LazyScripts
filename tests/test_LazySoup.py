@@ -1,11 +1,11 @@
 import unittest
-from jwp.jwsoup import *
+from jwp.LazySoup import *
 
 
 class soupTest(unittest.TestCase):
 
     def test_tor(self):
-        ip = 'http://ifconfig.me/ip'
+        ip = 'http://icanhazip.com'
         without_tor = get_soup(ip).text
         with_tor = get_soup(ip, tor=True).text
         self.assertNotEqual(without_tor, with_tor)
@@ -17,6 +17,9 @@ class soupTest(unittest.TestCase):
     def test_google(self):
         goog = get_soup('http://google.com')
         self.assertTrue(goog)
+
+    def tearDown(self):
+        reset_tor_socket()
 
 if __name__ == '__main__':
     unittest.main()

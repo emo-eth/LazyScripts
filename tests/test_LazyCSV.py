@@ -1,6 +1,6 @@
 import unittest
 import os
-from jwp.jwcsv import *
+from jwp.LazyCSV import *
 
 
 class csvTest(unittest.TestCase):
@@ -66,7 +66,8 @@ class csvTest(unittest.TestCase):
         self.assertTrue(len(example) == 2)
         self.assertEqual(example[0].fruit, 'blanabba')
         self.assertEqual(int(example[1].count), 3)
-        self.assertTrue(all(x in example[0]._fields for x in('fruit', 'count')))
+        self.assertTrue(all(x in example[0]._fields for x
+                            in('fruit', 'count')))
 
 if __name__ == '__main__':
     unittest.main()
