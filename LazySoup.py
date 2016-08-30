@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import socks
 import socket
 
+# TODO: Handle Tor stuff through LazyTor, since it doesn't have this weirdness
+
 # Configuration
 SOCKS5_PROXY_HOST = '127.0.0.1'
 SOCKS5_PROXY_PORT = 9050
