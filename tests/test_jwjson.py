@@ -20,7 +20,8 @@ class jsonTest(unittest.TestCase):
     def test_load_json(self):
         example = load_json(self.cwd + '/testdata/example.json')
         self.assertTrue(len(example) == 2)
-        self.assertTrue(all(x in example for x in ('1992-12-17', '1969-06-09')))
+        self.assertTrue(all(x in example for x in ('1992-12-17',
+                                                   '1969-06-09')))
 
     def test_write_json(self):
         write_json(self.testpath, self.js)

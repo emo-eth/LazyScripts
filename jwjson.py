@@ -1,7 +1,8 @@
 import json
 
 
-def load_json(path, encoding='utf-16', destroy_on_fail=False, touch=False, verbose=False):
+def load_json(path, encoding='utf-16', destroy_on_fail=False,
+              touch=False, verbose=False):
     assert type(path) is str, 'path must be string'
     cache_temp = {}
     try:
@@ -49,7 +50,8 @@ class jwjson(object):
     cache_updated = False
     cache = {}
 
-    def load_json(self, path, encoding='utf-16', destroy_on_fail=False, touch=False, verbose=False):
+    def load_json(self, path, encoding='utf-16', destroy_on_fail=False,
+                  touch=False, verbose=False):
         assert type(path) is str, 'path must be string'
         cache_temp = {}
         try:

@@ -15,7 +15,8 @@ def write_csv(outfile, rows, delimiter=',', headers=[], encoding='utf-8'):
         collection  headers:   a collection of identifiers to use as headers
         encoding    encoding:  the encoding to use on the file"""
     assert type(rows) is list or type(
-        rows) is tuple, "Rows arg must be a list/tuple of either lists, tuples or dicts"
+        rows) is tuple, "Rows arg must be a list/tuple of " \
+        "either lists, tuples or dicts"
     assert len(rows) or headers, "Nothing to writeout"
 
     def write_dicts(headers):  # pass headers since we might modify it
@@ -89,7 +90,7 @@ class jwcsv(object):
 
         def write_lists_tups_or_none(outfile, rows, delimiter, headers, encoding):
             with open(outfile, 'w', encoding=encoding) as outfile:
-                writer = csv.writer(outfile,ss delimiter=delimiter)
+                writer = csv.writer(outfile, delimiter=delimiter)
                 writer.writerow(headers) if headers else None
                 writer.writerows(rows)
 

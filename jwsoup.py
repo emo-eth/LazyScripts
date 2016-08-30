@@ -19,7 +19,8 @@ user_agent = 'jwsoup'
 JWSOUP_SESSION.headers.update({'User-Agent': user_agent})
 
 
-def get_soup(url, headers=None, cookies=None, timeout=None, fail=True, tor=False):
+def get_soup(url, headers=None, cookies=None, timeout=None, fail=True,
+             tor=False):
     _tor_check(tor)
     req = JWSOUP_SESSION.get(
         url, headers=headers, cookies=cookies, timeout=timeout)
