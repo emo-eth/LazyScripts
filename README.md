@@ -5,7 +5,7 @@ Convenient functions for Python:
 - LazyJSON: reading and writing JSON in a single line
 - LazyMultithread: multithreading and multiprocessing single functions in a single line, with error handling and traceback printing
 - LazySoup: downloading webpages as BeautifulSoup objects without drama using a `requests` session. Supports routing network through a tor port for anonymous-ish scraping.
-- LazyTor: Start and end Tor connections to use with `requests`. Get a pre-configured `requests.Session` with TorConnection.Session(). Get new IP address with `TorConnection.renew()` Supports context management, ie. `with TorConnection():` to close a Tor session automatically.
+- LazyTor: Start and end Tor connections to use with `requests`. Get a pre-configured `requests.Session` with `TorConnection.Session()`. Get a new IP address with `TorConnection.renew()`. Don't forget to `TorConnection.close()` to end your Tor session! Supports context management, ie. `with TorConnection():` to close a Tor session automatically.
 
 # Requirements
 
@@ -19,5 +19,4 @@ Convenient functions for Python:
 
 ### `torrc` config
 
-Follow [these instructions](https://stem.torproject.org/tutorials/the_little_relay_that_could.html) to set up your torrc for remote access with Python.
-
+Follow [these instructions](https://stem.torproject.org/tutorials/the_little_relay_that_could.html) to set up your `torrc` for remote access with Python. Likely contenders for `torrc` location: `/etc/tor/torrc`, `/etc/torrc`, or `/usr/local/etc/tor/torrc` if you compiled from source.
