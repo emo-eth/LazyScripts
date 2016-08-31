@@ -2,14 +2,14 @@
 
 from setuptools import setup
 
-with open('LazyScripts/version.py') as fid:
+with open('lazyscripts/version.py') as fid:
     for line in fid:
         if line.startswith('__version__'):
             version = line.strip().split()[-1][1:-1]
             break
 
 setup(name='LazyScripts',
-      packagez=['LazyScripts'],
+      packages=['LazyScripts'],
       version=version,
       description='Useful python modules for lazy scripting.',
       author='James Wenzel',

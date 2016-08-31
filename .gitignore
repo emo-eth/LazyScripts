@@ -6,3 +6,4 @@ password.py
 torrc_password.py
 dist/
 *.egg-info/
+build/
