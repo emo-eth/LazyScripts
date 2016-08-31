@@ -1,6 +1,4 @@
 import requests
-import os
-import sys
 from time import sleep
 from stem import Signal
 from stem.control import Controller
@@ -16,10 +14,8 @@ PASSWORD = None  # torrc password
 
 # try to import torrc password
 try:
-    cwd = os.path.dirname(os.path.realpath(__file__))
-    sys.path.append(cwd)
-    import password
-    PASSWORD = password.PASSWORD
+    import torrc_password
+    PASSWORD = torrc_password.PASSWORD
 except:
     print('Unable to load password.py with torrc password. You can still pass'
           ' it manually into the TorConnection constructor')
