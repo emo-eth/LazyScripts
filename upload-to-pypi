@@ -3,5 +3,5 @@
 source LazyScripts/version.py
 git tag $__version__
 git push --tags origin master
-# python setup.py register -r pypi
-# python setup.py sdist upload -r pypi
+python setup.py register -r pypi
+python setup.py sdist upload -r pypi
