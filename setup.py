@@ -8,14 +8,14 @@ with open('lazytools/version.py') as fid:
             version = line.strip().split()[-1][1:-1]
             break
 
-setup(name='LazyTools',
-      packagez=['LazyTools'],
+setup(name='LazyScripts',
+      packagez=['LazyScripts'],
       version=version,
       description='Useful python modules for lazy scripting.',
       author='James Wenzel',
       author_email='wenzel.james.r@gmail.com',
-      url='https://github.com/jameswenzel/LazyTools',
-      download_url='https://github.com/jameswenzel/LazyTools/tarball/0.1.1',
+      url='https://github.com/jameswenzel/LazyScripts',
+      download_url='https://github.com/jameswenzel/LazyScripts/tarball/0.1.0',
       license='Apache License, Version 2.0',
       keywords=['lazy', 'csv', 'tor', 'multithread', 'beautifulsoup', 'json'],
       classifiers=[],

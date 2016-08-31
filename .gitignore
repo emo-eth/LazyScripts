@@ -3,5 +3,6 @@ jwp/___pycache___/*
 jwp/.DS_STORE
 *.pyc
 password.py
+torrc_password.py
 dist/
 *.egg-info/
