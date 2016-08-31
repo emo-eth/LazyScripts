@@ -4,7 +4,7 @@ from setuptools import setup
 
 with open('lazyscripts/version.py') as fid:
     for line in fid:
-        if line.startswith('version'):
+        if line.startswith('__version__'):
             version = line.strip().split('=')[-1][1:-1]
             break
 
