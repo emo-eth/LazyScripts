@@ -1,6 +1,6 @@
 import unittest
 import os
-from jwp.LazyJSON import *
+from LazyScripts.LazyJSON import *
 
 
 class jsonTest(unittest.TestCase):

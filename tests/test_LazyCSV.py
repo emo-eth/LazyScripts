@@ -1,6 +1,6 @@
 import unittest
 import os
-from jwp.LazyCSV import *
+from LazyScripts.LazyCSV import *
 
 
 class csvTest(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 from utils import *
-from jwp.LazyMultithread import *
+from LazyScripts.LazyMultithread import *
 
 
 class multithreadedTest(unittest.TestCase):

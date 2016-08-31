@@ -1,5 +1,5 @@
 import unittest
-from jwp.LazySoup import *
+from LazyScripts.LazySoup import *
 
 
 class soupTest(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 import requests
-from jwp.LazyTor import TorConnection, check_ip
+from LazyScripts.LazyTor import TorConnection, check_ip
 
 # Weird SIGALRM warnings seemed to be a quirk of unittest
 
