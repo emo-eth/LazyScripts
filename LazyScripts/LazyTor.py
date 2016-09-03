@@ -76,7 +76,7 @@ class TorConnection(object):
     def connect():
         '''Returns controller for new or existing tor process.'''
         try:
-            launch_tor()
+            launch_tor(timeout=None)
         except OSError:  # unable to connect to 9050, eg, tor is running
             pass
         return CurrentConnectionController(TorConnection.CONTROL_PORT)
