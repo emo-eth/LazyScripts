@@ -4,8 +4,8 @@ Convenient functions for Python:
 - LazyCSV: reading and writing CSVs in a single line. Supports reading namedtuples and writing lists-of-like-dicts
 - LazyJSON: reading and writing JSON in a single line
 - LazyMultithread: multithreading and multiprocessing single functions in a single line, with error handling and traceback printing
-- LazySoup: downloading webpages as BeautifulSoup objects without drama using a `requests` session. Supports routing network through a tor port for anonymous-ish scraping.
-- LazyTor: Start and end Tor connections to use with `requests`. Get a pre-configured `requests.Session` with `TorConnection.Session()`. Get a new IP address with `TorConnection.renew()`. Don't forget to `TorConnection.close()` to end your Tor session! Supports context management, ie. `with TorConnection():` to close a Tor session automatically.
+- LazySoup: downloading webpages as BeautifulSoup objects without drama using a `requests` session. Supports routing requests through tor with `LazyTor`.
+- LazyTor: Start and end Tor connections to use with `requests`. Get a pre-configured `requests.Session` with `TorConnection().Session()`. Get a new IP address for an existing connection with `connection.renew()`. Don't forget to `connection.close()` to end your Tor process. Supports context management, ie. `with TorConnection() as connection:` to terminate a tor process automatically when you're done using it.
 
 # Installation
 
