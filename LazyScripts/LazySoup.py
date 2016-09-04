@@ -1,30 +1,34 @@
 import requests
-# import mechanicalsoup
+from LazyScripts import LazyTor
 from bs4 import BeautifulSoup
-import socks
-import socket
 
-# TODO: Handle Tor stuff through LazyTor, since it doesn't have this weirdness
-
-# Configuration
-SOCKS5_PROXY_HOST = '127.0.0.1'
-SOCKS5_PROXY_PORT = 9050
-socks.set_default_proxy(socks.SOCKS5, SOCKS5_PROXY_HOST, SOCKS5_PROXY_PORT)
-
-DEFAULT_SOCKET = socket.socket
-TOR_SOCKET = socks.socksocket
-
-JWSOUP_SESSION = requests.Session()  # use a session for persistence
+SESSION = requests.Session()  # use a session for persistence
+TOR = False
 
 cookies = None
-user_agent = 'jwsoup'
-JWSOUP_SESSION.headers.update({'User-Agent': user_agent})
+user_agent = 'LazySoup'
+SESSION.headers.update({'User-Agent': user_agent})
 
 
 def get_soup(url, headers=None, cookies=None, timeout=None, fail=True,
-             tor=False):
+             tor=TOR, session=SESSION):
+    '''Uses a requests.Session object to get a url and returns it a
+    BeautifulSoup object.
+
+    Args:
+        string url: url of the page
+        dict headers: headers you wish to pass with request
+        dict cookies: cookies you wish to pass with request
+        number timeout: how long you wait before throwing an error
+        bool fail: if false, returns empty bs4 object instead of raising an
+            error
+        bool tor: route through a tor process on port 9050 with cp 9051
+            (note: will not terminate tor process)
+        requests.Session session: requests.Session object used to make
+            requests. It is possible to pass in a pre-configured object using
+            different ports for tor.'''
     _tor_check(tor)
-    req = JWSOUP_SESSION.get(
+    req = session.get(
         url, headers=headers, cookies=cookies, timeout=timeout)
     try:
         _check_response(req.status_code)
@@ -36,10 +40,17 @@ def get_soup(url, headers=None, cookies=None, timeout=None, fail=True,
         return BeautifulSoup('', 'lxml')
 
 
-def get_cookies(url, tor=False):
-    "Gets cookie for passing with request."
+def get_cookies(url, tor=TOR, session=SESSION):
+    '''Gets and returns cookies for passing with requests.
+
+    Args:
+        bool tor: route through a tor process on port 9050 with cp 9051
+            (note: will not terminate tor process)
+        requests.Session session: requests.Session object used to make
+            requests. It is possible to pass in a pre-configured object using
+            different ports for tor'''
     _tor_check(tor)
-    req = JWSOUP_SESSION.get(
+    req = session.get(
         url, headers={'User-Agent': user_agent})
     try:
         _check_response(req.status_code)
@@ -49,45 +60,29 @@ def get_cookies(url, tor=False):
         return None
 
 
-def set_tor_socket():
-    "use tor proxy port"
-    # Set up a proxy
-    socket.socket = TOR_SOCKET
-
-
-def reset_tor_socket():
-    "return to default socket"
-    socket.socket = DEFAULT_SOCKET
-
-
-def get_new_IP():
-    "TODO: Write this per that article"
-    pass
-
-
-def _tor_check(tor):
-    if tor and socket.socket is not TOR_SOCKET:
-        set_tor_socket()
-    elif socket.socket is not DEFAULT_SOCKET:
-        reset_tor_socket()
-
-
 def _check_response(status_code):
     first_digit = status_code // 100
     assert first_digit in {2, 3}
 
 
-'''
-Experimental login method using mechanicalsoup for a project I was working on.
+''' Tor Functions '''
 
-    def _login(self):
-        browser = mechanicalsoup.Browser()
-        login_page = browser.get(
-            'https://www.redweek.com/signin?target=http%3A%2F%2Fwww.redweek.com%2F')
-        login_form = login_page.soup.form
-        login_page.soup.select('#id')[0]['value'] = self._username
-        login_page.soup.select('#password')[0]['value'] = self._pw
-        print("Logging in...")
-        browser.submit(login_form, login_page.url)
-        return browser.session.cookies
-'''
+
+def use_proxies_of(session):
+    '''Configures module to use the proxies for a particular session
+        (especially a session configured for Tor)
+
+    Args:
+        requests.Session session: a session whose proxies will be used for the
+            module-level SESSION
+    '''
+    SESSION.proxies = session.proxies
+
+
+def _tor_check(tor):
+    '''Configures module-level SESSION to use a tor connection's proxies if
+    supplied value is True'''
+    if tor and not SESSION.proxies:
+        use_proxies_of(LazyTor.TorConnection().Session())
+    if not tor and SESSION.proxies:
+        SESSION.proxies = None
