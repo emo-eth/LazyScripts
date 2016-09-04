@@ -1,4 +1,6 @@
 import requests
+import os
+import shutil
 from time import sleep
 from stem import Signal
 from stem.control import Controller
@@ -6,30 +8,40 @@ from stem.process import launch_tor
 from stem.util.connection import is_valid_ipv4_address, is_valid_port
 from stem.socket import ControlPort
 
-'''TODO: Add support for different tor ports?'''
+'''
+TODO:
+    -Fix data thing
+    -Look into take_ownership param in launch_tor (and return that
+        subprocess'''
 
-CHECK_URL = 'http://icanhazip.com'
-PASSWORD = None  # torrc password
-# CONTROL_PORT = 9051  # reassign as necessary
+PROXY_FORMAT = {
+    'http': 'socks5://127.0.0.1:{0}',
+    'https': 'socks5://127.0.0.1:{0}'
+}
 
 # try to import torrc password
+PASSWORD = None  # torrc password
 try:
     import torrc_password
     PASSWORD = torrc_password.PASSWORD
 except:
-    print('Unable to load password.py with torrc password. You can still pass'
-          ' it manually into the TorConnection constructor')
+    print('Unable to load torrc_password.py with torrc password. You can still'
+          ' pass it manually into the TorConnection constructor')
 
 
 def check_ip(session):
-    "Returns JSON response containing origin IP address."
-    return session.get(CHECK_URL).text
+    "Returns text containing origin IP address."
+    return session.get('http://icanhazip.com').text
 
 
 class CurrentConnectionController(Controller):
-    """Subclass of stem.control.Controller that connects to current tor
-    session with default address/control_port, tries to send SIGTERM message
-    to tor on exit"""
+    """Subclass of stem.control.Controller that connects to a tor process and
+    tries to send SIGTERM message on exit
+
+    Args:
+        int control_port: control port for particular tor process
+        string password: torrc password
+    """
 
     def __init__(self, control_port, password=PASSWORD):
         address = '127.0.0.1'
@@ -60,29 +72,48 @@ class CurrentConnectionController(Controller):
 
 
 class TorConnection(object):
-    PROXIES = {
-        'http': 'socks5://127.0.0.1:9050',
-        'https': 'socks5://127.0.0.1:9050'
-    }
-    CONTROL_PORT = 9051
-    PASSWORD_ = PASSWORD
+    '''Object that creates/connects to a tor process'''
 
-    def __init__(self, control_port=CONTROL_PORT, password=PASSWORD):
+    def __init__(self, socks_port=9050, control_port=9051, password=PASSWORD):
+        self.SOCKS_PORT = socks_port
         self.CONTROL_PORT = control_port
         self.PASSWORD_ = password
-        self.connection = self.connect()
+        self.PROXIES = self._format_proxies(socks_port)
+        self.connection = self.connect(socks_port, control_port)
 
     @staticmethod
-    def connect():
+    def _format_proxies(socks_port):
+        '''Formats a dict of proxies with supplied socks_port
+
+        Args:
+            int socks_port: port # of tor connection
+        '''
+        PROXIES = dict()
+        PROXIES['http'] = PROXY_FORMAT['http'].format(socks_port)
+        PROXIES['https'] = PROXY_FORMAT['https'].format(socks_port)
+        return PROXIES
+
+    def connect(self, socks_port=9050, control_port=9051,
+                take_ownership=False):
         '''Returns controller for new or existing tor process.'''
+        # create a data folder, path format tor_data/torXXXX where
+        # XXXX is the socks_port #
+        data_directory = str(socks_port)
+        if not os.path.exists('tor_data'):
+            os.mkdir('tor_data')
+        if not os.path.exists('tor_data/' + data_directory):
+            os.mkdir('tor_data/' + data_directory)
+
+        tor_args = ['SocksPort', str(socks_port), 'ControlPort',
+                    str(control_port), 'Datadirectory', 'tor_data/' +
+                    data_directory]
         try:
-            launch_tor(timeout=None)
+            launch_tor(args=tor_args, timeout=None)
         except OSError:  # unable to connect to 9050, eg, tor is running
             pass
-        return CurrentConnectionController(TorConnection.CONTROL_PORT)
+        return CurrentConnectionController(control_port)
 
-    @staticmethod
-    def renew():
+    def renew(self):
         '''Signal TOR for a new connection
 
         thanks http://stackoverflow.com/questions/30286293/
@@ -90,18 +121,17 @@ class TorConnection(object):
         and https://gist.github.com/
             KhepryQuixote/46cf4f3b999d7f658853'''
         SLEEPSECS = 1
-        SESSION = TorConnection.Session()
+        SESSION = self.Session()
         old_ip = check_ip(SESSION)
-        # we don't want a CCC because it closes tor session by default :)
-        with Controller.from_port(port=TorConnection.CONTROL_PORT) \
+        # we don't want a CCC because it closes tor process by default :)
+        with Controller.from_port(port=self.CONTROL_PORT) \
                 as controller:
-            controller.authenticate(password=TorConnection.PASSWORD_)
+            controller.authenticate(password=self.PASSWORD_)
             controller.signal(Signal.NEWNYM)
         new_ip = check_ip(SESSION)
         seconds = 0
         while old_ip == new_ip:
-            # sleep this thread
-            # for the specified duration
+            # sleep this thread for the specified duration
             sleep(SLEEPSECS)
             # track the elapsed seconds
             seconds += SLEEPSECS
@@ -111,33 +141,30 @@ class TorConnection(object):
             print("%d seconds elapsed awaiting a different IP address."
                   % seconds)
 
-    @staticmethod
-    def close():
+    def close(self):
         '''Sends Signal.TERM to current connection'''
         try:
-            CurrentConnectionController(TorConnection.CONTROL_PORT,
-                                        TorConnection.PASSWORD_).SIGTERM()
+            CurrentConnectionController(self.CONTROL_PORT,
+                                        self.PASSWORD_).SIGTERM()
         except:
-            print('No current tor session.')
+            print('No current tor process with control port {0}.'
+                  .format(self.CONTROL_PORT))
 
-    @staticmethod
-    def kill():
+    def kill(self):
         '''Sends Signal.KILL to current connection'''
         try:
-            CurrentConnectionController(TorConnection.CONTROL_PORT,
-                                        TorConnection.PASSWORD_).SIGKILL()
+            CurrentConnectionController(self.CONTROL_PORT,
+                                        self.PASSWORD_).SIGKILL()
         except:
-            print('No current tor session.')
+            print('No current tor process with control port {0}.'
+                  .format(self.CONTROL_PORT))
 
-    @staticmethod
-    def Session():
-        '''Returns a requests.Session object configured with TorConnection's
-        PROXIES class-property'''
+    def Session(self):
+        '''Returns a requests.Session object configured with this
+        TorConnection's PROXIES'''
 
-        # create a tor connection if not already; close connection object..?
-        TorConnection.connect().close()
         s = requests.Session()
-        s.proxies = TorConnection.PROXIES
+        s.proxies = self.PROXIES
         return s
 
     ''' Methods for context management (ie with statements) '''
