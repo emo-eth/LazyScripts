@@ -7,3 +7,4 @@ torrc_password.py
 dist/
 *.egg-info/
 build/
+tor_data/
