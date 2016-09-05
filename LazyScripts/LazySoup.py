@@ -1,6 +1,10 @@
 import requests
 from LazyScripts import LazyTor
 from bs4 import BeautifulSoup
+try:
+    from torrc_password import PASSWORD
+except:
+    print('No torrc password found.')
 
 SESSION = requests.Session()  # use a session for persistence
 TOR = False
@@ -83,6 +87,6 @@ def _tor_check(tor):
     '''Configures module-level SESSION to use a tor connection's proxies if
     supplied value is True'''
     if tor and not SESSION.proxies:
-        use_proxies_of(LazyTor.TorConnection().Session())
+        use_proxies_of(LazyTor.TorConnection(password=PASSWORD).Session())
     if not tor and SESSION.proxies:
         SESSION.proxies = None
