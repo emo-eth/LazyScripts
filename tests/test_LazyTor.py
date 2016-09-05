@@ -1,6 +1,10 @@
 import unittest
 import requests
 from LazyScripts.LazyTor import TorConnection, check_ip
+try:
+    from torrc_password import PASSWORD
+except:
+    print('No torrc password found. Tests will fail.')
 
 
 class torTest(unittest.TestCase):
@@ -8,14 +12,14 @@ class torTest(unittest.TestCase):
     def test_tor_connection(self):
         '''Test that using a TorConnection results in a new ip'''
         start_ip = check_ip(requests)
-        with TorConnection() as t:
+        with TorConnection(password=PASSWORD) as t:
             session = t.Session()
             tor_ip = check_ip(session)
             self.assertNotEqual(start_ip, tor_ip)
 
     def test_renew(self):
         '''Test that a TorConnection can renew and get a new ip'''
-        with TorConnection() as t:
+        with TorConnection(password=PASSWORD) as t:
             session = t.Session()
             start_ip = check_ip(session)
             t.renew()
@@ -26,7 +30,8 @@ class torTest(unittest.TestCase):
         '''Tests that a TorConnection can start on different SocksPort+Control
         Port'''
         start_ip = check_ip(requests)
-        with TorConnection(socks_port=9999, control_port=10000) as t:
+        with TorConnection(socks_port=9999, control_port=10000,
+                           password=PASSWORD) as t:
             session = t.Session()
             tor_ip = check_ip(session)
             self.assertNotEqual(start_ip, tor_ip)
@@ -35,18 +40,19 @@ class torTest(unittest.TestCase):
         '''Tests that LazyTor can make a connection to a Tor process that is
         already running'''
 
-        TorConnection()
-        with TorConnection():
+        TorConnection(password=PASSWORD)
+        with TorConnection(password=PASSWORD):
             pass
         self.assertTrue(True)
 
     def test_two_different_tor_connections(self):
         '''Test that a TorConnection on a different port has a different ip
         address'''
-        with TorConnection() as t1:
+        with TorConnection(password=PASSWORD) as t1:
             session1 = t1.Session()
             first_ip = check_ip(session1)
-            with TorConnection(socks_port=1111, control_port=2222) as t2:
+            with TorConnection(socks_port=1111, control_port=2222,
+                               password=PASSWORD) as t2:
                 session2 = t2.Session()
                 second_ip = check_ip(session2)
         self.assertNotEqual(first_ip, second_ip)
