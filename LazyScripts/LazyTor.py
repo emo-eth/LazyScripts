@@ -1,6 +1,5 @@
 import requests
 import os
-import shutil
 from time import sleep
 from stem import Signal
 from stem.control import Controller
@@ -111,7 +110,7 @@ class TorConnection(object):
             launch_tor(args=tor_args, timeout=None)
         except OSError:  # unable to connect to 9050, eg, tor is running
             pass
-        return CurrentConnectionController(control_port)
+        return CurrentConnectionController(control_port, self.PASSWORD_)
 
     def renew(self):
         '''Signal TOR for a new connection
