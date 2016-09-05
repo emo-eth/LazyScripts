@@ -2,11 +2,20 @@
 
 from setuptools import setup
 
-with open('lazyscripts/version.py') as fid:
-    for line in fid:
-        if line.startswith('__version__'):
-            version = line.strip().split('=')[-1][1:-1]
-            break
+
+def load_version(path):
+    with open(path) as fid:
+        for line in fid:
+            if line.startswith('__version__'):
+                version = line.strip().split('=')[-1][1:-1]
+                return version
+
+# for some reason, "try" fails on linux, but "except"
+# fails on mac os
+try:
+    version = load_version('lazyscripts/version.py')
+except:
+    version = load_version('LazyScripts/version.py')
 
 setup(name='LazyScripts',
       packages=['LazyScripts'],
