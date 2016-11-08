@@ -1,31 +1,18 @@
-import requests
 import os
+import requests
 from time import sleep
+from subprocess import check_output
 from stem import Signal
 from stem.control import Controller
-from stem.process import launch_tor
-from stem.util.connection import is_valid_ipv4_address, is_valid_port
+from stem.process import launch_tor_with_config
+from stem.util.connection import is_valid_port
 from stem.socket import ControlPort
 
-'''
-TODO:
-    -Fix data thing
-    -Look into take_ownership param in launch_tor (and return that
-        subprocess'''
 
 PROXY_FORMAT = {
     'http': 'socks5://127.0.0.1:{0}',
     'https': 'socks5://127.0.0.1:{0}'
 }
-
-# try to import torrc password
-PASSWORD = None  # torrc password
-try:
-    import torrc_password
-    PASSWORD = torrc_password.PASSWORD
-except:
-    print('Unable to load torrc_password.py with torrc password. You can still'
-          ' pass it manually into the TorConnection constructor')
 
 
 def check_ip(session):
@@ -33,67 +20,46 @@ def check_ip(session):
     return session.get('http://icanhazip.com').text
 
 
-class CurrentConnectionController(Controller):
-    """Subclass of stem.control.Controller that connects to a tor process and
-    tries to send SIGTERM message on exit
-
-    Args:
-        int control_port: control port for particular tor process
-        string password: torrc password
-    """
-
-    def __init__(self, control_port, password=PASSWORD):
-        address = '127.0.0.1'
-        if not is_valid_ipv4_address(address):
-            raise ValueError("Invalid IP address: %s" % address)
-        elif not is_valid_port(control_port):
-            raise ValueError("Invalid port: %s" % control_port)
-
-        cp = ControlPort(address, control_port)
-        super().__init__(cp)
-        self.authenticate(password=password)
-
-    def SIGTERM(self):
-        '''Send SIGTERM to tor'''
-        self.signal(Signal.TERM)
-
-    def SIGKILL(self):
-        '''Send SIGKILL to tor'''
-        self.signal(Signal.KILL)
-
-    def __exit__(self, exit_type, value, traceback):
-        try:
-            self.SIGTERM()
-        except Exception as e:
-            print("Failed to terminate process.")
-            print(type(e), e)
-        self.close()
-
-
 class TorConnection(object):
     '''Object that creates/connects to a tor process'''
 
-    def __init__(self, socks_port=9050, control_port=9051, password=PASSWORD):
+    def __init__(self, socks_port=9050, control_port=9051,
+                 password='my_password'):
         self.SOCKS_PORT = socks_port
         self.CONTROL_PORT = control_port
-        self.PASSWORD_ = password
-        self.PROXIES = self._format_proxies(socks_port)
+        self.PASSWORD = password
+        self.PROXIES = self.format_proxies(socks_port)
         self.connection = self.connect(socks_port, control_port)
 
     @staticmethod
-    def _format_proxies(socks_port):
+    def format_proxies(socks_port):
         '''Formats a dict of proxies with supplied socks_port
 
         Args:
             int socks_port: port # of tor connection
         '''
-        PROXIES = dict()
-        PROXIES['http'] = PROXY_FORMAT['http'].format(socks_port)
-        PROXIES['https'] = PROXY_FORMAT['https'].format(socks_port)
-        return PROXIES
+        proxies = dict()
+        proxies['http'] = PROXY_FORMAT['http'].format(socks_port)
+        proxies['https'] = PROXY_FORMAT['https'].format(socks_port)
+        return proxies
 
-    def connect(self, socks_port=9050, control_port=9051,
-                take_ownership=False):
+    @staticmethod
+    def hash_password(password):
+        '''Returns the hash value for a password, used for setting controlport
+        access.
+
+        Args:
+            string password: the password you want to hash
+
+        Returns:
+            string of password hash
+        '''
+        hashed_password = check_output(['tor', '--hash-password', password]
+                                       ).strip()
+        # stdout is bytes, but launch_tor_with_config expects unicode str
+        return str(hashed_password, 'utf-8')
+
+    def connect(self, socks_port=9050, control_port=9051):
         '''Returns controller for new or existing tor process.'''
         # create a data folder, path format tor_data/torXXXX where
         # XXXX is the socks_port #
@@ -103,14 +69,19 @@ class TorConnection(object):
         if not os.path.exists('tor_data/' + data_directory):
             os.mkdir('tor_data/' + data_directory)
 
-        tor_args = ['SocksPort', str(socks_port), 'ControlPort',
-                    str(control_port), 'Datadirectory', 'tor_data/' +
-                    data_directory]
+        # hash the control password, start+return the subprocess
+        hashed_password = self.hash_password(self.PASSWORD)
+        config = {
+            'SocksPort': [socks_port],
+            'ControlPort': [control_port],
+            'Datadirectory': 'tor_data/' + data_directory,
+            'HashedControlPassword': hashed_password
+        }
         try:
-            launch_tor(args=tor_args, timeout=None)
+            launch_tor_with_config(config, timeout=None)
         except OSError:  # unable to connect to 9050, eg, tor is running
             pass
-        return CurrentConnectionController(control_port, self.PASSWORD_)
+        return _CurrentConnectionController(control_port, self.PASSWORD)
 
     def renew(self):
         '''Signal TOR for a new connection
@@ -125,7 +96,7 @@ class TorConnection(object):
         # we don't want a CCC because it closes tor process by default :)
         with Controller.from_port(port=self.CONTROL_PORT) \
                 as controller:
-            controller.authenticate(password=self.PASSWORD_)
+            controller.authenticate(password=self.PASSWORD)
             controller.signal(Signal.NEWNYM)
         new_ip = check_ip(SESSION)
         seconds = 0
@@ -143,17 +114,18 @@ class TorConnection(object):
     def close(self):
         '''Sends Signal.TERM to current connection'''
         try:
-            CurrentConnectionController(self.CONTROL_PORT,
-                                        self.PASSWORD_).SIGTERM()
-        except:
+            _CurrentConnectionController(self.CONTROL_PORT,
+                                         self.PASSWORD).SIGTERM()
+        except Exception as e:
+            print(type(e), e)
             print('No current tor process with control port {0}.'
                   .format(self.CONTROL_PORT))
 
     def kill(self):
         '''Sends Signal.KILL to current connection'''
         try:
-            CurrentConnectionController(self.CONTROL_PORT,
-                                        self.PASSWORD_).SIGKILL()
+            _CurrentConnectionController(self.CONTROL_PORT,
+                                         self.PASSWORD).SIGKILL()
         except:
             print('No current tor process with control port {0}.'
                   .format(self.CONTROL_PORT))
@@ -162,9 +134,9 @@ class TorConnection(object):
         '''Returns a requests.Session object configured with this
         TorConnection's PROXIES'''
 
-        s = requests.Session()
-        s.proxies = self.PROXIES
-        return s
+        session = requests.Session()
+        session.proxies = self.PROXIES
+        return session
 
     ''' Methods for context management (ie with statements) '''
 
@@ -186,3 +158,36 @@ class TorConnection(object):
     sigkill = kill
     SIGTERM = close
     SIGKILL = kill
+
+
+class _CurrentConnectionController(Controller):
+    '''Subclass of stem.control.Controller that connects to a tor process and
+    tries to send SIGTERM message on exit
+
+    Args:
+        int control_port: control port for particular tor process
+        string password: torrc password
+    '''
+
+    def __init__(self, control_port, password):
+        assert is_valid_port(control_port), "Invalid port: %s" % control_port
+
+        address = '127.0.0.1'
+        cp = ControlPort(address, control_port)
+        super().__init__(cp)
+        self.authenticate(password=password)
+
+    def SIGTERM(self):
+        '''Send SIGTERM to tor'''
+        self.signal(Signal.TERM)
+
+    def SIGKILL(self):
+        '''Send SIGKILL to tor'''
+        self.signal(Signal.KILL)
+
+    def __exit__(self, exit_type, value, traceback):
+        try:
+            self.SIGTERM()
+        except:
+            print("Failed to terminate process.")
+        self.close()
