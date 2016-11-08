@@ -1,61 +1,44 @@
 import requests
-from LazyScripts import LazyTor
 from bs4 import BeautifulSoup
-try:
-    from torrc_password import PASSWORD
-except:
-    print('No torrc password found.')
 
-SESSION = requests.Session()  # use a session for persistence
-TOR = False
-
-cookies = None
-user_agent = 'LazySoup'
-SESSION.headers.update({'User-Agent': user_agent})
+SESSION = requests.Session()  # use a session for persistence (ie, cookies)
+SESSION.headers.update({'User-Agent': 'LazySoup'})
 
 
-def get_soup(url, headers=None, cookies=None, timeout=None, fail=True,
-             tor=TOR, session=SESSION):
-    '''Uses a requests.Session object to get a url and returns it a
+def get_soup(url, parser='lxml', headers=None, cookies=None, timeout=None):
+    '''Uses a requests.Session object to get a url and returns it as a
     BeautifulSoup object.
 
     Args:
+        REQUIRED:
         string url: url of the page
+
+        Optional:
+        string parser: parser you wish to use for creating BeautifulSoup object
         dict headers: headers you wish to pass with request
         dict cookies: cookies you wish to pass with request
-        number timeout: how long you wait before throwing an error
-        bool fail: if false, returns empty bs4 object instead of raising an
-            error
-        bool tor: route through a tor process on port 9050 with cp 9051
-            (note: will not terminate tor process)
-        requests.Session session: requests.Session object used to make
-            requests. It is possible to pass in a pre-configured object using
-            different ports for tor.'''
-    _tor_check(tor)
-    req = session.get(
+        number timeout: how long to wait before throwing an error
+    '''
+    req = SESSION.get(
         url, headers=headers, cookies=cookies, timeout=timeout)
     try:
         _check_response(req.status_code)
-        return BeautifulSoup(req.text, 'lxml')
+        return BeautifulSoup(req.text, parser)
     except AssertionError:
         print('Unable to download url ' + url)
-        if fail:
-            raise ValueError('Status', req.status_code)
-        return BeautifulSoup('', 'lxml')
+        raise ValueError('Status', req.status_code)
 
 
-def get_cookies(url, tor=TOR, session=SESSION):
+def get_cookies(url, headers=None):
     '''Gets and returns cookies for passing with requests.
 
     Args:
-        bool tor: route through a tor process on port 9050 with cp 9051
-            (note: will not terminate tor process)
-        requests.Session session: requests.Session object used to make
-            requests. It is possible to pass in a pre-configured object using
-            different ports for tor'''
-    _tor_check(tor)
-    req = session.get(
-        url, headers={'User-Agent': user_agent})
+        string url: url to get and return cookies for
+        dict headers: headers to pass with the request
+
+    Returns cookies acquired by the request.
+    '''
+    req = SESSION.get(url, headers=headers)
     try:
         _check_response(req.status_code)
         return req.cookies
@@ -65,11 +48,59 @@ def get_cookies(url, tor=TOR, session=SESSION):
 
 
 def _check_response(status_code):
+    '''Checks the first digit of a status code returned by a GET, and
+    assumes/asserts any 2xx/3xx status code is ok.
+    '''
     first_digit = status_code // 100
-    assert first_digit in {2, 3}
+    assert first_digit in {2, 3}, "Bad status code"
 
 
-''' Tor Functions '''
+'''LazySoup class'''
+
+
+class LazySoup(object):
+    '''A class wrapper around get_soup with its own session property, which
+    allows for per-instance settings
+    '''
+
+    def __init__(self, headers={'User-Agent': 'LazySoup'},
+                 session=requests.Session()):
+        '''
+        Args:
+            Optional
+            requests.Session session: the session to use for getting soup
+            dict headers: dict of headers to add to self.session.headers
+        '''
+        self.session = session
+        self.session.headers.update(headers)
+
+    def get_soup(self, url, parser='lxml', headers=None, cookies=None,
+                 timeout=None):
+        '''Uses a requests.Session object to get a url and returns it as a
+        BeautifulSoup object.
+
+        Args:
+            REQUIRED:
+            string url: url of the page
+
+            Optional:
+            string parser: parser you wish to use for creating BeautifulSoup
+                object
+            dict headers: headers you wish to pass with request
+            dict cookies: cookies you wish to pass with request
+            number timeout: how long to wait before throwing an error
+        '''
+        req = self.session.get(
+            url, headers=headers, cookies=cookies, timeout=timeout)
+        try:
+            _check_response(req.status_code)
+            return BeautifulSoup(req.text, parser)
+        except AssertionError:
+            print('Unable to download url ' + url)
+            raise ValueError('Status', req.status_code)
+
+
+''' Module-level setters '''
 
 
 def use_proxies_of(session):
@@ -81,12 +112,3 @@ def use_proxies_of(session):
             module-level SESSION
     '''
     SESSION.proxies = session.proxies
-
-
-def _tor_check(tor):
-    '''Configures module-level SESSION to use a tor connection's proxies if
-    supplied value is True'''
-    if tor and not SESSION.proxies:
-        use_proxies_of(LazyTor.TorConnection(password=PASSWORD).Session())
-    if not tor and SESSION.proxies:
-        SESSION.proxies = None
