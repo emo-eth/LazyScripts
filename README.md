@@ -13,8 +13,3 @@ Install with `pip install lazyscripts`.
 
 ## Other Packages
 - [Tor](https://www.torproject.org/docs/tor-doc-osx.html.en) - `brew install tor` with Homebrew or `sudo port install tor` with Macports on OS X
-
-### `torrc` config
-
-Follow [these instructions](https://stem.torproject.org/tutorials/the_little_relay_that_could.html) to set up your `torrc` for remote access with Python. Likely contenders for `torrc` location: `/etc/tor/torrc`, `/etc/torrc`, or `/usr/local/etc/tor/torrc` if you compiled from source.  
-To use your `torrc` password by default, include a python module named `torrc_password.py` with the variable `PASSWORD` set to your password in the directory you are developing in.
