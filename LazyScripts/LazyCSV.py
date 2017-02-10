@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import csv
-from collections import namedtuple
+from itertools import chain
+from collections import namedtuple, Iterable
 
 
 def write_csv(outfile, rows, delimiter=',', headers=[], encoding='utf-8'):
@@ -9,40 +10,53 @@ def write_csv(outfile, rows, delimiter=',', headers=[], encoding='utf-8'):
     TODO: Add support for writing out namedtuples with headers
     Args:
         string     outfile:    the file to writeout
-        collection rows:       a collection of rows, each a collection
+        iterable   rows:       a collection of rows, each a collection
                                (eg, a list of lists)
 
         OPTIONAL:
         string      delimiter: the delimiter to use
         collection  headers:   a collection of identifiers to use as headers
         encoding    encoding:  the encoding to use on the file"""
-    assert type(rows) is list or type(
-        rows) is tuple, "Rows arg must be a list/tuple of " \
-        "either lists, tuples or dicts"
-    assert len(rows) or headers, "Nothing to writeout"
+    assert isinstance(rows, Iterable), "Rows arg must be iterable"
 
     def write_dicts(headers):  # pass headers since we might modify it
         if not headers:
-            headers = list(rows[0].keys())
+            headers = list(first_elem.keys())
         with open(outfile, 'w', encoding=encoding) as f:
             writer = csv.DictWriter(
                 f, fieldnames=headers, delimiter=delimiter)
             writer.writeheader()
             writer.writerows(rows)
 
-    def write_lists_or_tups():
+    def write_rows(headers):
+        if isinstance(first_elem, tuple):
+            try:
+                headers = first_elem._fields
+            except AttributeError:
+                pass
         with open(outfile, 'w', encoding=encoding) as f:
             writer = csv.writer(f, delimiter=delimiter)
             writer.writerow(headers) if headers else None
             writer.writerows(rows)
 
-    if rows:
-        if type(rows[0]) is dict:
-            write_dicts(headers)
-        else:
-            write_lists_or_tups()
+    def _get_next(rows):
+        try:
+            return next(rows), rows
+        except TypeError:
+            temp = rows[0]
+            rows = rows[1:]
+            # update rows and return it since slicing will only
+            # modify it in this namespace
+            return temp, rows
+
+    # get first element to decide if we're writing dicts
+    first_elem, rows = _get_next(rows)
+    # chain first and rest together
+    rows = chain([first_elem], rows)
+    if isinstance(first_elem, dict):
+        write_dicts(headers)
     else:
-        write_lists_or_tups()
+        write_rows(headers)
 
 
 def read_csv(infile, delimiter=',', encoding='utf-8', named=False):

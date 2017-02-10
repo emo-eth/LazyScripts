@@ -18,7 +18,8 @@ class jsonTest(unittest.TestCase):
             os.remove(self.testpath)
 
     def test_load_json(self):
-        example = load_json(self.cwd + '/testdata/example.json')
+        example = load_json(self.cwd + '/testdata/example.json',
+                            encoding='utf-16')
         self.assertTrue(len(example) == 2)
         self.assertTrue(all(x in example for x in ('1992-12-17',
                                                    '1969-06-09')))

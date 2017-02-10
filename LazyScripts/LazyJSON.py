@@ -3,7 +3,7 @@
 import json
 
 
-def load_json(path, encoding='utf-16', destroy_on_fail=False,
+def read_json(path, encoding='utf-8', destroy_on_fail=False,
               touch=False, verbose=False):
     assert type(path) is str, 'path must be string'
     cache_temp = {}
@@ -31,10 +31,10 @@ def load_json(path, encoding='utf-16', destroy_on_fail=False,
             raise e
 
 
-def write_json(path, out, encoding='utf-16'):
+def write_json(path, out, encoding='utf-8'):
     assert type(path) is str, 'path must be string'
     with open(path, 'w', encoding=encoding) as outfile:
         json.dump(out, outfile)
 
 # aliases
-read_json = load_json
+load_json = read_json
