@@ -64,14 +64,17 @@ class LazySoup(object):
     '''
 
     def __init__(self, headers={'User-Agent': 'LazySoup'},
-                 session=requests.Session()):
+                 session=requests.Session):
         '''
         Args:
             Optional
             requests.Session session: the session to use for getting soup
             dict headers: dict of headers to add to self.session.headers
         '''
-        self.session = session
+        if isinstance(session, requests.Session):
+            self.session = session
+        else:
+            self.session = session()
         self.session.headers.update(headers)
 
     def get_soup(self, url, parser='lxml', headers=None, cookies=None,
